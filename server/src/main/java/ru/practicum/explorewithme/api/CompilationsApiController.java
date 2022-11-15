@@ -1,20 +1,17 @@
 package ru.practicum.explorewithme.api;
 
-import ru.practicum.explorewithme.model.CompilationDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.explorewithme.model.CompilationDto;
 
-import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 
@@ -34,7 +31,7 @@ public class CompilationsApiController implements CompilationsApi {
         this.request = request;
     }
 
-    public ResponseEntity<CompilationDto> getCompilation(@Parameter(in = ParameterIn.PATH, description = "id подборки", required=true, schema=@Schema()) @PathVariable("compId") Long compId) {
+    public ResponseEntity<CompilationDto> getCompilation(@PathVariable("compId") Long compId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -48,7 +45,7 @@ public class CompilationsApiController implements CompilationsApi {
         return new ResponseEntity<CompilationDto>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<List<CompilationDto>> getCompilations(@Parameter(in = ParameterIn.QUERY, description = "искать только закрепленные/не закрепленные подборки" ,schema=@Schema()) @Valid @RequestParam(value = "pinned", required = false) Boolean pinned,@Parameter(in = ParameterIn.QUERY, description = "количество элементов, которые нужно пропустить для формирования текущего набора" ,schema=@Schema( defaultValue="0")) @Valid @RequestParam(value = "from", required = false, defaultValue="0") Integer from,@Parameter(in = ParameterIn.QUERY, description = "количество элементов в наборе" ,schema=@Schema( defaultValue="10")) @Valid @RequestParam(value = "size", required = false, defaultValue="10") Integer size) {
+    public ResponseEntity<List<CompilationDto>> getCompilations(@Valid @RequestParam(value = "pinned", required = false) Boolean pinned, @Valid @RequestParam(value = "from", required = false, defaultValue = "0") Integer from, @Valid @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {

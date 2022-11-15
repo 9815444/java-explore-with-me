@@ -1,31 +1,25 @@
 package ru.practicum.explorewithme.api;
 
-import ru.practicum.explorewithme.model.EventFullDto;
-import ru.practicum.explorewithme.model.EventShortDto;
-import ru.practicum.explorewithme.model.NewEventDto;
-import ru.practicum.explorewithme.model.ParticipationRequestDto;
-import ru.practicum.explorewithme.model.UpdateEventRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
-import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.explorewithme.model.*;
+import ru.practicum.explorewithme.service.UserService;
 
-import javax.validation.constraints.*;
-import javax.validation.Valid;
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-11-13T14:31:14.091Z[GMT]")
+//@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-11-13T14:31:14.091Z[GMT]")
 @RestController
+@RequiredArgsConstructor
+@RequestMapping
 public class UsersApiController implements UsersApi {
 
     private static final Logger log = LoggerFactory.getLogger(UsersApiController.class);
@@ -34,13 +28,16 @@ public class UsersApiController implements UsersApi {
 
     private final HttpServletRequest request;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    public UsersApiController(ObjectMapper objectMapper, HttpServletRequest request) {
-        this.objectMapper = objectMapper;
-        this.request = request;
-    }
+    private final UserService userService;
 
-    public ResponseEntity<EventFullDto> addEvent(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId, @Parameter(in = ParameterIn.DEFAULT, description = "данные добавляемого события", required=true, schema=@Schema()) @Valid @RequestBody NewEventDto body) {
+//    @org.springframework.beans.factory.annotation.Autowired
+//    public UsersApiController(ObjectMapper objectMapper, HttpServletRequest request, UserService userService) {
+//        this.objectMapper = objectMapper;
+//        this.request = request;
+//        th
+//    }
+
+    public ResponseEntity<EventFullDto> addEvent(@PathVariable("userId") Long userId, @Valid @RequestBody NewEventDto body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -54,7 +51,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<EventFullDto>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<ParticipationRequestDto> addParticipationRequest(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId, @NotNull @Parameter(in = ParameterIn.QUERY, description = "id события" ,required=true,schema=@Schema()) @Valid @RequestParam(value = "eventId", required = true) Long eventId) {
+    public ResponseEntity<ParticipationRequestDto> addParticipationRequest(@PathVariable("userId") Long userId, @NotNull @Valid @RequestParam(value = "eventId", required = true) Long eventId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -68,7 +65,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<ParticipationRequestDto>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<EventFullDto> cancelEvent(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId,@Parameter(in = ParameterIn.PATH, description = "id отменяемого события", required=true, schema=@Schema()) @PathVariable("eventId") Long eventId) {
+    public ResponseEntity<EventFullDto> cancelEvent(@PathVariable("userId") Long userId, @PathVariable("eventId") Long eventId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -82,7 +79,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<EventFullDto>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<ParticipationRequestDto> cancelParticipationRequest(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId,@Parameter(in = ParameterIn.PATH, description = "id события текущего пользователя", required=true, schema=@Schema()) @PathVariable("eventId") Long eventId,@Parameter(in = ParameterIn.PATH, description = "id заявки, которую отменяет текущий пользователь", required=true, schema=@Schema()) @PathVariable("reqId") Long reqId) {
+    public ResponseEntity<ParticipationRequestDto> cancelParticipationRequest(@PathVariable("userId") Long userId, @PathVariable("eventId") Long eventId, @PathVariable("reqId") Long reqId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -96,7 +93,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<ParticipationRequestDto>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<ParticipationRequestDto> cancelRequest(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId,@Parameter(in = ParameterIn.PATH, description = "id запроса на участие", required=true, schema=@Schema()) @PathVariable("requestId") Long requestId) {
+    public ResponseEntity<ParticipationRequestDto> cancelRequest(@PathVariable("userId") Long userId, @PathVariable("requestId") Long requestId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -110,7 +107,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<ParticipationRequestDto>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<ParticipationRequestDto> confirmParticipationRequest(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId,@Parameter(in = ParameterIn.PATH, description = "id события текущего пользователя", required=true, schema=@Schema()) @PathVariable("eventId") Long eventId,@Parameter(in = ParameterIn.PATH, description = "id заявки, которую подтверждает текущий пользователь", required=true, schema=@Schema()) @PathVariable("reqId") Long reqId) {
+    public ResponseEntity<ParticipationRequestDto> confirmParticipationRequest(@PathVariable("userId") Long userId, @PathVariable("eventId") Long eventId, @PathVariable("reqId") Long reqId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -124,7 +121,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<ParticipationRequestDto>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<EventFullDto> getEvent(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId,@Parameter(in = ParameterIn.PATH, description = "id события", required=true, schema=@Schema()) @PathVariable("eventId") Long eventId) {
+    public ResponseEntity<EventFullDto> getEvent(@PathVariable("userId") Long userId, @PathVariable("eventId") Long eventId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -138,7 +135,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<EventFullDto>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<List<ParticipationRequestDto>> getEventParticipants(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId,@Parameter(in = ParameterIn.PATH, description = "id события", required=true, schema=@Schema()) @PathVariable("eventId") Long eventId) {
+    public ResponseEntity<List<ParticipationRequestDto>> getEventParticipants(@PathVariable("userId") Long userId, @PathVariable("eventId") Long eventId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -152,7 +149,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<List<ParticipationRequestDto>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<List<EventShortDto>> getEvents(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId, @Parameter(in = ParameterIn.QUERY, description = "количество элементов, которые нужно пропустить для формирования текущего набора" ,schema=@Schema( defaultValue="0")) @Valid @RequestParam(value = "from", required = false, defaultValue="0") Integer from, @Parameter(in = ParameterIn.QUERY, description = "количество элементов в наборе" ,schema=@Schema( defaultValue="10")) @Valid @RequestParam(value = "size", required = false, defaultValue="10") Integer size) {
+    public ResponseEntity<List<EventShortDto>> getEvents(@PathVariable("userId") Long userId, @Valid @RequestParam(value = "from", required = false, defaultValue = "0") Integer from, @Valid @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -166,7 +163,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<List<EventShortDto>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<List<ParticipationRequestDto>> getUserRequests(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId) {
+    public ResponseEntity<List<ParticipationRequestDto>> getUserRequests(@PathVariable("userId") Long userId) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {
@@ -180,7 +177,7 @@ public class UsersApiController implements UsersApi {
         return new ResponseEntity<List<ParticipationRequestDto>>(HttpStatus.NOT_IMPLEMENTED);
     }
 
-    public ResponseEntity<EventFullDto> updateEvent1(@Parameter(in = ParameterIn.PATH, description = "id текущего пользователя", required=true, schema=@Schema()) @PathVariable("userId") Long userId,@Parameter(in = ParameterIn.DEFAULT, description = "Новые данные события", required=true, schema=@Schema()) @Valid @RequestBody UpdateEventRequest body) {
+    public ResponseEntity<EventFullDto> updateEvent1(@PathVariable("userId") Long userId, @Valid @RequestBody UpdateEventRequest body) {
         String accept = request.getHeader("Accept");
         if (accept != null && accept.contains("application/json")) {
             try {

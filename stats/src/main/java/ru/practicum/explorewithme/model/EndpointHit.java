@@ -1,28 +1,25 @@
 package ru.practicum.explorewithme.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.validation.annotation.Validated;
-
-import java.util.Objects;
 
 @Validated
 //@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-11-14T14:41:24.731Z[GMT]")
-public class EndpointHit   {
-  @JsonProperty("id")
-  private Long id = null;
+public class EndpointHit {
+    @JsonProperty("id")
+    private Long id = null;
 
-  @JsonProperty("app")
-  private String app = null;
+    @JsonProperty("app")
+    private String app = null;
 
-  @JsonProperty("uri")
-  private String uri = null;
+    @JsonProperty("uri")
+    private String uri = null;
 
-  @JsonProperty("ip")
-  private String ip = null;
+    @JsonProperty("ip")
+    private String ip = null;
 
-  @JsonProperty("timestamp")
-  private String timestamp = null;
+    @JsonProperty("timestamp")
+    private String timestamp = null;
 
 //  public EndpointHit id(Long id) {
 //    this.id = id;
