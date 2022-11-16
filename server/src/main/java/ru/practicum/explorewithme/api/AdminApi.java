@@ -120,7 +120,7 @@ public interface AdminApi {
             consumes = {"application/json"},
             method = RequestMethod.PUT)
     ResponseEntity<EventFullDto> updateEvent(@PathVariable("eventId") Long eventId, @Valid @RequestBody AdminUpdateEventRequest body);
-    //} Events
+    //} Events....
 
 }
 
