@@ -4,7 +4,7 @@ package ru.practicum.explorewithme;
 //import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+//import org.springframework.context.annotation.ComponentScan;
 //import org.springframework.context.annotation.Configuration;
 //import org.springframework.format.FormatterRegistry;
 //import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -12,7 +12,6 @@ import org.springframework.context.annotation.ComponentScan;
 //import ru.practicum.explorewithme.configuration.LocalDateTimeConverter;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"ru.practicum.explorewithme", "ru.practicum.explorewithme.api", "ru.practicum.explorewithme.configuration"})
 public class Stats /*implements CommandLineRunner*/ {
 
 //    @Override
