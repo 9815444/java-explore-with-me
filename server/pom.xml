@@ -20,7 +20,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <springfox-version>3.0.0</springfox-version>
-        <start-class>ru.practicum.explorewithme.Server</start-class>
+        <start-class>ewm.Server</start-class>
     </properties>
 
     <dependencies>
@@ -36,6 +36,22 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>2.4.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
         </dependency>
 
         <!--SpringFox dependencies -->
@@ -140,7 +156,7 @@
 
 <!--                                &lt;!&ndash; give full qualified name of your main class&ndash;&gt;-->
 <!--                                <addClasspath>true</addClasspath>-->
-<!--                                <mainClass>ru.practicum.explorewithme.Server</mainClass>-->
+<!--                                <mainClass>ewm.Server</mainClass>-->
 
 <!--                            </manifest>-->
 <!--                        </archive>-->
@@ -150,7 +166,7 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <configuration>
-<!--                        <mainClass>ru.practicum.explorewithme.Server</mainClass>-->
+<!--                        <mainClass>ewm.Server</mainClass>-->
                         <excludes>
                             <exclude>
                                 <groupId>org.projectlombok</groupId>
