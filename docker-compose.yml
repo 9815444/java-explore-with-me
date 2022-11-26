@@ -51,6 +51,7 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/explorewithme
       - spring_datasource_username=explorewithme
       - spring_datasource_password=explorewithme
+      - stats-app.url=http://stats:9090
 
 
 

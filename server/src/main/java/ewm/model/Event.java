@@ -68,7 +68,7 @@ public class Event {
     @JsonProperty("initiator")
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
-    private UserDto initiator = null;
+    private User initiator = null;
 
     @JsonProperty("location")
     @ManyToOne(optional = false)

@@ -1,8 +1,11 @@
 package ewm.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -11,20 +14,23 @@ import java.util.List;
 
 @Getter
 @Setter
-@Valid
+@AllArgsConstructor
+@NoArgsConstructor
+@Validated
 public class NewCompilationDto {
 
     @JsonProperty("events")
     @Valid
-    private List<Long> events = null;
+    private List<Long> events;
 
     @JsonProperty("pinned")
     @NotNull
     private Boolean pinned = false;
 
     @JsonProperty("title")
+    @Valid
     @NotNull
     @NotBlank
-    private String title = null;
+    private String title;
 
 }

@@ -1,6 +1,6 @@
 package ewm.repository;
 
-import ewm.model.UserDto;
+import ewm.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserDto, Long> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
-    Page<UserDto> findAllByIdIn(List<Long> ids, Pageable pageable);
+    Page<User> findAllByIdIn(List<Long> ids, Pageable pageable);
 
 }

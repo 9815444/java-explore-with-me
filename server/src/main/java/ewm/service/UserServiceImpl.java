@@ -4,7 +4,7 @@ import ewm.errors.BadRequestException;
 import ewm.errors.NotFoundException;
 import ewm.mapper.UserMapper;
 import ewm.model.NewUserDto;
-import ewm.model.UserDto;
+import ewm.model.User;
 import ewm.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDto registerUser(NewUserDto newUserDto) {
+    public User registerUser(NewUserDto newUserDto) {
         if (newUserDto.getName() == null
                 || newUserDto.getName().isBlank()) {
             throw new BadRequestException("Не заполнено имя");
@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
+    public List<User> getUsers(List<Long> ids, Integer from, Integer size) {
         int fromPage = from.intValue() / size.intValue();
         Pageable pageable = PageRequest.of(fromPage, size.intValue());
         if (ids == null) {

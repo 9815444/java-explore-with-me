@@ -1,14 +1,14 @@
 package ewm.mapper;
 
 import ewm.model.NewUserDto;
-import ewm.model.UserDto;
+import ewm.model.User;
 
 public class UserMapper {
 
-    public static UserDto newUserRequestToUserDto(NewUserDto newUserDto) {
-        UserDto userDto = new UserDto();
-        userDto.setName(newUserDto.getName());
-        userDto.setEmail(newUserDto.getEmail());
-        return userDto;
+    public static User newUserRequestToUserDto(NewUserDto newUserDto) {
+        User user = new User();
+        user.setName(newUserDto.getName());
+        user.setEmail(newUserDto.getEmail());
+        return user;
     }
 }

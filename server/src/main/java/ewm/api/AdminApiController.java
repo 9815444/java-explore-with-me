@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -19,6 +20,7 @@ import java.util.List;
 //@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2022-11-13T14:31:14.091Z[GMT]")
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class AdminApiController {
 
     private final UserService userService;
@@ -35,7 +37,7 @@ public class AdminApiController {
             produces = {"application/json"},
             consumes = {"application/json"},
             method = RequestMethod.POST)
-    public ResponseEntity<UserDto> registerUser(@Valid @RequestBody NewUserDto newUserDto) {
+    public ResponseEntity<User> registerUser(@Valid @RequestBody NewUserDto newUserDto) {
         var userDto = userService.registerUser(newUserDto);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
@@ -52,7 +54,7 @@ public class AdminApiController {
     @RequestMapping(value = "/admin/users",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity<List<UserDto>> getUsers(
+    public ResponseEntity<List<User>> getUsers(
             @Valid @RequestParam(value = "ids", required = false) List<Long> ids,
             @Valid @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
             @Valid @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
