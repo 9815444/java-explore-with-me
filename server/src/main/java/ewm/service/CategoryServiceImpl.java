@@ -21,7 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category addCategory(NewCategoryDto newCategoryDto) {
-        var newCat = categoryRepository.save(CategoryMapper.NewCategoryDtoToCategoryDto(newCategoryDto));
+        var newCat = categoryRepository.save(CategoryMapper.newCategoryDtoToCategoryDto(newCategoryDto));
         return newCat;
     }
 
@@ -49,8 +49,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category getCategory(Long catId) {
-        var optionalCategoryDto = categoryRepository.findById(catId).
-                orElseThrow(() -> new NotFoundException("Категория не найдена"));
+        var optionalCategoryDto = categoryRepository.findById(catId)
+                .orElseThrow(() -> new NotFoundException("Категория не найдена"));
         return optionalCategoryDto;
     }
 }

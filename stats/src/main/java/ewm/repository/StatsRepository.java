@@ -11,29 +11,6 @@ import java.util.List;
 @Repository
 public interface StatsRepository extends JpaRepository<StatEntry, Long> {
 
-    //    @Query(value =
-//            "SELECT u " +
-//                    "FROM StatEntry u" +
-//                    " WHERE " +
-//                    "((u.uri in (:uris)) or (:allUris = true))" +
-//                    "and" +
-//                    "((u.state in (:states)) or (:allStates = true))" +
-//                    "and" +
-//                    "((u.timestamp >= :start) or (:noStartDateRestrictions = true))" +
-//                    "and" +
-//                    "((u.timestamp <= :end) or (:noEndDateRestrictions = true))")
-//    List<StatEntry> getStats(
-//            @Param("start") LocalDateTime start,
-//            @Param("noStartDateRestrictions") boolean noStartDateRestrictions,
-//            @Param("end") LocalDateTime End,
-//            @Param("noEndDateRestrictions") boolean noEndDateRestrictions,
-//            @Param("uris") List<String> uris,
-//            @Param("allUris") boolean allUris,
-//
-//            @Param("states") List<Event.StateEnum> states,
-//            @Param("allStates") boolean allStates,
-//
-//            Pageable pageable);
     @Query(value = "select s.app, s.uri, count(app) as hits " +
             "from stats s " +
             "where " +
@@ -43,11 +20,11 @@ public interface StatsRepository extends JpaRepository<StatEntry, Long> {
             "and " +
             "(s.uri in ?5 or ?6 = true) " +
             "group by " +
-            "app, uri"
-            , nativeQuery = true)
+            "app, uri",
+            nativeQuery = true)
     List<Object[]> getStats(LocalDateTime start,
                             boolean noStartDateRestrictions,
-                            LocalDateTime End,
+                            LocalDateTime end,
                             boolean noEndDateRestrictions,
                             List<String> uris,
                             boolean allUris);
@@ -66,7 +43,7 @@ public interface StatsRepository extends JpaRepository<StatEntry, Long> {
             "group by aui.app, uri", nativeQuery = true)
     List<Object[]> getUniqIpStats(LocalDateTime start,
                                   boolean noStartDateRestrictions,
-                                  LocalDateTime End,
+                                  LocalDateTime end,
                                   boolean noEndDateRestrictions,
                                   List<String> uris,
                                   boolean allUris);

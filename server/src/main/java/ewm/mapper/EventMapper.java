@@ -20,7 +20,7 @@ public class EventMapper {
         return event;
     }
 
-    public static Event UpdateEventRequestToEvent(UpdateEventRequest updateEventRequest) {
+    public static Event updateEventRequestToEvent(UpdateEventRequest updateEventRequest) {
         Event event = new Event();
         event.setId(updateEventRequest.getEventId());
         event.setAnnotation(updateEventRequest.getAnnotation());

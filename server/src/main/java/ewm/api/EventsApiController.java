@@ -4,17 +4,13 @@ import ewm.client.StatsClient;
 import ewm.model.Event;
 import ewm.model.StatEntry;
 import ewm.service.EventService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.metrics.MetricsProperties;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -49,10 +45,10 @@ public class EventsApiController {
             @Valid @RequestParam(value = "paid", required = false) Boolean paid,
 
             @Valid @RequestParam(value = "rangeStart", required = false)
-            @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
 
             @Valid @RequestParam(value = "rangeEnd", required = false)
-            @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
+            @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
 
             @Valid @RequestParam(value = "onlyAvailable", required = false, defaultValue = "false") Boolean onlyAvailable,
             @Valid @RequestParam(value = "sort", required = false) String sort,

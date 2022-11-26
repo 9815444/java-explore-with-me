@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.Formula;
 import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.*;
@@ -42,7 +41,7 @@ public class Event {
     @Column(name = "location_id", insertable = false, updatable = false)
     private Long locationId;
 
-//    @OneToOne(cascade = CascadeType.ALL)
+    //    @OneToOne(cascade = CascadeType.ALL)
 //    @JoinColumn(name = "category_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     @JoinColumn(name = "category_id")
@@ -53,7 +52,7 @@ public class Event {
     private Long confirmedRequests = null;
 
     @JsonProperty("createdOn")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_on")
     private LocalDateTime createdOn;
 
@@ -62,7 +61,7 @@ public class Event {
     private String description = null;
 
     @JsonProperty("eventDate")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "event_date")
     private LocalDateTime eventDate = null;
 
@@ -85,7 +84,7 @@ public class Event {
     private Integer participantLimit = 0;
 
     @JsonProperty("publishedOn")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
@@ -135,7 +134,6 @@ public class Event {
             return null;
         }
     }
-
 
 
 //    public EventFullDto annotation(String annotation) {

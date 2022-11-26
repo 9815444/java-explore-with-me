@@ -48,7 +48,7 @@ public class StatEntry {
     @JsonProperty("timestamp")
     @Column(name = "date_time")
     @NotNull
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp = null;
 
 }

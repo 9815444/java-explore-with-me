@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -212,26 +211,26 @@ public class EventServiceImpl implements EventService {
         }
         List<Event> result;
         if (onlyAvailable) {
-            result = events.
-                    stream().
-                    filter(event -> participantLimitNotReached(event)).
-                    collect(Collectors.toList());
+            result = events
+                    .stream()
+                    .filter(event -> participantLimitNotReached(event))
+                    .collect(Collectors.toList());
 
         } else {
             result = events;
         }
         if (sort.equals("EVENT_DATE")) {
-            return result.stream().
-                    sorted((e1, e2) -> {
+            return result.stream()
+                    .sorted((e1, e2) -> {
                         return e1.getEventDate().compareTo(e2.getEventDate());
-                    }).
-                    collect(Collectors.toList());
+                    })
+                    .collect(Collectors.toList());
         } else {
-            return result.stream().
-                    sorted((e1, e2) -> {
+            return result.stream()
+                    .sorted((e1, e2) -> {
                         return e1.getViews().compareTo(e2.getViews());
-                    }).
-                    collect(Collectors.toList());
+                    })
+                    .collect(Collectors.toList());
         }
     }
 
@@ -313,7 +312,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Request cancelRequest(Long userId, Long requestId) {
         var req = requestRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Не найден запрос"));
-        if (req.getRequester() != userId) {
+        if (!(req.getRequester().equals(userId))) {
             throw new BadRequestException("Пользователь не является автором запроса");
         }
         req.setStatus(Request.StateEnum.CANCELED);
@@ -323,7 +322,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event cancelEvent(Long userId, Long eventId) {
         var event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
-        if (event.getUserId() != userId) {
+        if (!(event.getUserId().equals(userId))) {
             throw new BadRequestException("Пользователь не является автором события");
         }
         if (!event.getState().equals(Event.StateEnum.PENDING)) {
@@ -335,8 +334,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event getEvent(Long eventId) {
-        var event = eventRepository.findById(eventId).
-                orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        var event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
         var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
         event.setConfirmedRequests(Long.valueOf(reqs.size()));
         return event;
@@ -344,8 +343,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<Request> getUserEventRequests(Long userId, Long eventId) {
-        var event = eventRepository.findById(eventId).
-                orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        var event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
         if (!event.getUserId().equals(userId)) {
             throw new BadRequestException("Это событие другого пользователя");
         }
@@ -397,19 +396,15 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public Compilation addCompilation(NewCompilationDto newCompilationDto) {
-//        if (newCompilationDto.getTitle() == null
-//                || newCompilationDto.getTitle().isBlank()) {
-//            throw new BadRequestException("Не заполнено имя");
-//        }
         Compilation compilation = new Compilation();
         compilation.setTitle(newCompilationDto.getTitle());
         compilation.setPinned(newCompilationDto.getPinned());
         List<Event> events = new ArrayList<>();
-        List<CompilationEvent> compilationEvents = new ArrayList<>();
+//        List<CompilationEvent> compilationEvents = new ArrayList<>();
         for (Long eventId : newCompilationDto.getEvents()) {
             events.add(
-                    eventRepository.findById(eventId).
-                            orElseThrow(() -> new NotFoundException("Событие не найдено"))
+                    eventRepository.findById(eventId)
+                            .orElseThrow(() -> new NotFoundException("Событие не найдено"))
             );
         }
         compilation.setEvents(events);
@@ -426,8 +421,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void deleteCompilation(Long compId) {
-        Compilation compilation = compilationRepository.findById(compId).
-                orElseThrow(() -> new NotFoundException("Подборка не найдена"));
+        Compilation compilation = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException("Подборка не найдена"));
         var compilationEvent = compilationEventRepository.findAllByCompilationId(compId);
         for (CompilationEvent eventIncComp : compilationEvent) {
             compilationEventRepository.deleteById(eventIncComp.getId());
@@ -437,13 +432,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Compilation getCompilation(Long compId) {
-        Compilation compilation = compilationRepository.findById(compId).
-                orElseThrow(() -> new NotFoundException("Подборка не найдена"));
+        Compilation compilation = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException("Подборка не найдена"));
         var events = compilationEventRepository.findAllByCompilationId(compId);
         compilation.setEvents(
                 events.stream().map((e) -> {
-                    return eventRepository.findById(e.getEventId()).
-                            orElseThrow(() -> new NotFoundException("Не найдено событие"));
+                    return eventRepository.findById(e.getEventId())
+                            .orElseThrow(() -> new NotFoundException("Не найдено событие"));
                 }).collect(Collectors.toList()));
         return compilation;
     }
@@ -460,10 +455,10 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void addEventToCompilation(Long compId, Long eventId) {
-        var comp = compilationRepository.findById(compId).
-                orElseThrow(() -> new NotFoundException("Подборка не найдена"));
-        var event = eventRepository.findById(eventId).
-                orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        var comp = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException("Подборка не найдена"));
+        var event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
         CompilationEvent compilationEvent = new CompilationEvent();
         compilationEvent.setCompilationId(compId);
         compilationEvent.setEventId(eventId);
@@ -472,10 +467,10 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void removeEventFromCompilation(Long compId, Long eventId) {
-        var comp = compilationRepository.findById(compId).
-                orElseThrow(() -> new NotFoundException("Подборка не найдена"));
-        var event = eventRepository.findById(eventId).
-                orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        var comp = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException("Подборка не найдена"));
+        var event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Событие не найдено"));
         List<CompilationEvent> compilationEventList = compilationEventRepository.findAllByCompilationIdAndEventId(compId, eventId);
         compilationEventRepository.deleteAllById(compilationEventList.stream().map((e) -> e.getId()).collect(Collectors.toList()));
     }
@@ -491,8 +486,8 @@ public class EventServiceImpl implements EventService {
             comps = compilationRepository.findAllByPinned(pinned, pageable);
         }
         for (Compilation comp : comps) {
-            var eventsIdList = compilationEventRepository.findAllByCompilationId(comp.getId()).stream().
-                    map(compilationEvent -> compilationEvent.getEventId()).collect(Collectors.toList());
+            var eventsIdList = compilationEventRepository.findAllByCompilationId(comp.getId()).stream()
+                    .map(compilationEvent -> compilationEvent.getEventId()).collect(Collectors.toList());
             var events = eventRepository.findAllById(eventsIdList);
             comp.setEvents(events);
 
@@ -501,8 +496,8 @@ public class EventServiceImpl implements EventService {
     }
 
     public void pinUnpin(Long compId, boolean pinned) {
-        var comp = compilationRepository.findById(compId).
-                orElseThrow(() -> new NotFoundException("Подборка не найдена"));
+        var comp = compilationRepository.findById(compId)
+                .orElseThrow(() -> new NotFoundException("Подборка не найдена"));
         comp.setPinned(pinned);
         compilationRepository.save(comp);
     }

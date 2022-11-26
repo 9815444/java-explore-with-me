@@ -27,7 +27,7 @@ public class NewEventDto {
     private String description = null;
 
     @JsonProperty("eventDate")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @NotNull
     private LocalDateTime eventDate = null;
 

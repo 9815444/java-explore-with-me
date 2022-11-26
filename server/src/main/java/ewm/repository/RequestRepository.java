@@ -1,6 +1,5 @@
 package ewm.repository;
 
-import ewm.model.Event;
 import ewm.model.Request;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

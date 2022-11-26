@@ -8,8 +8,6 @@ import lombok.Setter;
 import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.*;
-import javax.validation.Valid;
-import java.util.List;
 
 @Validated
 @AllArgsConstructor

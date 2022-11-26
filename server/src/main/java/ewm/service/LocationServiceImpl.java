@@ -1,9 +1,9 @@
 package ewm.service;
 
 import ewm.model.Location;
+import ewm.repository.LocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ewm.repository.LocationRepository;
 
 import java.util.Optional;
 

@@ -28,7 +28,7 @@ public class Request {
     private Long id = null;
 
     @JsonProperty("created")
-    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created")
     private LocalDateTime created = null;
 

@@ -1,8 +1,8 @@
 package ewm.repository;
 
+import ewm.model.Event;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import ewm.model.Event;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,7 +18,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query(value =
             "SELECT u " +
-            "FROM Event u" +
+                    "FROM Event u" +
                     " WHERE " +
                     "((u.userId in (:users)) or (:allUsers = true))" +
                     "and" +
