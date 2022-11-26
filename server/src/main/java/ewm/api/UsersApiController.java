@@ -1,12 +1,10 @@
 package ewm.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ewm.model.Event;
 import ewm.model.NewEventDto;
 import ewm.model.Request;
 import ewm.model.UpdateEventRequest;
 import ewm.service.EventService;
-import ewm.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -25,12 +22,6 @@ import java.util.List;
 public class UsersApiController {
 
     private static final Logger log = LoggerFactory.getLogger(UsersApiController.class);
-
-    private final ObjectMapper objectMapper;
-
-    private final HttpServletRequest request;
-
-    private final UserService userService;
 
     private final EventService eventService;
 

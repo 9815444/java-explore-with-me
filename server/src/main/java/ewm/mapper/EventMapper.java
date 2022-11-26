@@ -9,7 +9,6 @@ public class EventMapper {
     public static Event newEventDtoToEvent(NewEventDto newEventDto) {
         Event event = new Event();
         event.setAnnotation(newEventDto.getAnnotation());
-        //event.setCategoryId(newEventDto.getCategoryId());
         event.setDescription(newEventDto.getDescription());
         event.setEventDate(newEventDto.getEventDate());
         event.setLocation(newEventDto.getLocation());

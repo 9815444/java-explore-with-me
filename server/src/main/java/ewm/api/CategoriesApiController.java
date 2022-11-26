@@ -1,6 +1,5 @@
 package ewm.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import ewm.model.Category;
 import ewm.service.CategoryService;
 import lombok.RequiredArgsConstructor;
@@ -18,8 +17,6 @@ import java.util.List;
 public class CategoriesApiController {
 
     private static final Logger log = LoggerFactory.getLogger(CategoriesApiController.class);
-
-    private final ObjectMapper objectMapper;
 
     private final CategoryService categoryService;
 

@@ -25,20 +25,4 @@ public class StatsClient extends BaseClient {
         return post("/hit", statEntry);
     }
 
-//    public ResponseEntity<Object> updateUser(Long userId, UserDto userDto) {
-//        return patch("/" + userId, userDto);
-//    }
-//
-//    public void deleteUser(Long userId) {
-//        delete("/" + userId);
-//    }
-//
-//    public ResponseEntity<Object> getUser(Long userId) {
-//        return get("/" + userId);
-//    }
-//
-//    public ResponseEntity<Object> getAllUsers() {
-//        return get("/");
-//    }
-
 }

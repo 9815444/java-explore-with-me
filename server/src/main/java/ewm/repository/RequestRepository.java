@@ -14,7 +14,6 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     List<Request> findAllByEventAndStatus(Long event, Request.StateEnum status);
 
-
     List<Request> findAllByEvent(Long eventId);
 
     List<Request> findAllByRequester(Long userId);
