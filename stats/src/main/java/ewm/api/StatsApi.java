@@ -42,7 +42,6 @@ public class StatsApi {
             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
             @Valid @RequestParam(value = "uris", required = false) List<String> uris,
             @Valid @RequestParam(value = "unique", required = false, defaultValue = "false") Boolean unique) {
-//        return new ResponseEntity<>(statsService.getStats(start, end, uris, unique), HttpStatus.OK);
         var stats = statsService.getStats(start, end, uris, unique);
         return new ResponseEntity<>(stats, HttpStatus.OK);
     }
