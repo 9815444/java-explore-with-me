@@ -5,8 +5,7 @@ import ewm.service.CategoryService;
 import ewm.service.EventService;
 import ewm.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +19,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class AdminApiController {
 
     private final UserService userService;
@@ -27,8 +27,6 @@ public class AdminApiController {
     private final EventService eventService;
 
     private final CategoryService categoryService;
-
-    private static final Logger log = LoggerFactory.getLogger(AdminApiController.class);
 
     //Users {
 
