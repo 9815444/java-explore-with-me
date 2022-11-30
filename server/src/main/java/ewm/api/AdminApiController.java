@@ -95,7 +95,8 @@ public class AdminApiController {
     @RequestMapping(value = "/admin/compilations/{compId}/events/{eventId}",
             produces = {"application/json"},
             method = RequestMethod.PATCH)
-    ResponseEntity<Void> addEventToCompilation(@PathVariable("compId") Long compId, @PathVariable("eventId") Long eventId) {
+    ResponseEntity<Void> addEventToCompilation(@PathVariable("compId") Long compId,
+                                               @PathVariable("eventId") Long eventId) {
         eventService.addEventToCompilation(compId, eventId);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
@@ -151,7 +152,8 @@ public class AdminApiController {
             produces = {"application/json"},
             consumes = {"application/json"},
             method = RequestMethod.PUT)
-    public ResponseEntity<Event> updateEvent(@PathVariable("eventId") Long eventId, @Valid @RequestBody AdminUpdateEventRequest body) {
+    public ResponseEntity<Event> updateEvent(@PathVariable("eventId") Long eventId,
+                                             @Valid @RequestBody AdminUpdateEventRequest body) {
         return new ResponseEntity<>(eventService.updateEventAdmin(eventId, body), HttpStatus.OK);
     }
 

@@ -1,12 +1,9 @@
 package ewm.api;
 
-import ewm.client.StatsClient;
 import ewm.model.Event;
-import ewm.model.StatEntry;
 import ewm.service.EventService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,20 +16,16 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class EventsApiController {
 
-    private static final Logger log = LoggerFactory.getLogger(EventsApiController.class);
-
     private final EventService eventService;
-
-    private final StatsClient statsClient;
 
     @RequestMapping(value = "/events/{id}",
             produces = {"application/json"},
             method = RequestMethod.GET)
     public ResponseEntity<Event> getEvent(@PathVariable("id") Long id, HttpServletRequest request) {
-        var event = eventService.getEventPublic(id);
-        statsClient.addStatEntry(new StatEntry("ewm", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
+        var event = eventService.getEventPublic(id, request.getRequestURI(), request.getRemoteAddr());
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 
@@ -50,13 +43,15 @@ public class EventsApiController {
             @Valid @RequestParam(value = "rangeEnd", required = false)
             @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
 
-            @Valid @RequestParam(value = "onlyAvailable", required = false, defaultValue = "false") Boolean onlyAvailable,
+            @Valid @RequestParam(value = "onlyAvailable", required = false,
+                    defaultValue = "false") Boolean onlyAvailable,
             @Valid @RequestParam(value = "sort", required = false) String sort,
             @Valid @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
             @Valid @RequestParam(value = "size", required = false, defaultValue = "10") Integer size,
             HttpServletRequest request) {
-        var events = eventService.getAllEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size);
-        statsClient.addStatEntry(new StatEntry("ewm", request.getRequestURI(), request.getRemoteAddr(), LocalDateTime.now()));
+        var events = eventService.getAllEvents(text, categories,
+                paid, rangeStart, rangeEnd, onlyAvailable,
+                sort, from, size, request.getRequestURI(), request.getRemoteAddr());
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 

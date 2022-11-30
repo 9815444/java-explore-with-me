@@ -4,8 +4,7 @@ import ewm.model.StatEntry;
 import ewm.model.StatEntryDto;
 import ewm.service.StatsService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +16,10 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class StatsApi {
 
     private final StatsService statsService;
-
-    private static final Logger log = LoggerFactory.getLogger(StatsApi.class);
 
     @RequestMapping(value = "/hit",
             produces = {"application/json"},

@@ -1,5 +1,6 @@
 package ewm.service;
 
+import ewm.client.StatsClient;
 import ewm.errors.BadRequestException;
 import ewm.errors.NotFoundException;
 import ewm.mapper.EventMapper;
@@ -21,6 +22,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
+
+    private final StatsClient statsClient;
 
     private final EventRepository eventRepository;
 
@@ -76,16 +79,18 @@ public class EventServiceImpl implements EventService {
 
     //todo добавить количество просмотров и отразить в статистике
     @Override
-    public Event getEventPublic(Long id) {
+    public Event getEventPublic(Long id, String requestURI, String remoteAddr) {
         var event = eventRepository.findByIdAndState(id, Event.StateEnum.PUBLISHED).orElseThrow();
         var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
         event.setConfirmedRequests(Long.valueOf(reqs.size()));
+        statsClient.addStatEntry(new StatEntry("ewm", requestURI, remoteAddr, LocalDateTime.now()));
         return event;
     }
 
     @Override
     public Event publishEvent(Long eventId) {
-        var event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Не найдено событие"));
+        var event = eventRepository.findById(eventId).orElseThrow(
+                () -> new NotFoundException("Не найдено событие"));
         if (event.getState().equals(Event.StateEnum.PENDING)
                 && event.getEventDate().isAfter(LocalDateTime.now().plusHours(1))) {
             event.setState(Event.StateEnum.PUBLISHED);
@@ -111,11 +116,13 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event updateEventAdmin(Long eventId, AdminUpdateEventRequest newData) {
-        var event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Не найдено событие"));
+        var event = eventRepository.findById(eventId).orElseThrow(
+                () -> new NotFoundException("Не найдено событие"));
         event.setAnnotation(newData.getAnnotation());
 
         var categoryId = newData.getCategory();
-        var category = categoryRepository.findById(categoryId).orElseThrow(() -> new NotFoundException("Не найдена категория"));
+        var category = categoryRepository.findById(categoryId).orElseThrow(
+                () -> new NotFoundException("Не найдена категория"));
 
         event.setCategory(category);
         event.setCategoryId(categoryId);
@@ -189,7 +196,10 @@ public class EventServiceImpl implements EventService {
             Boolean onlyAvailable,
             String sort,
             Integer from,
-            Integer size) {
+            Integer size,
+            String requestURI,
+            String remoteAddr) {
+        statsClient.addStatEntry(new StatEntry("ewm", requestURI, remoteAddr, LocalDateTime.now()));
         int fromPage = from.intValue() / size.intValue(); //todo добавить количество просмотров
         Pageable pageable = PageRequest.of(fromPage, size.intValue());
         if (sort == null) {
@@ -206,7 +216,8 @@ public class EventServiceImpl implements EventService {
                 LocalDateTime.now(),
                 pageable);
         for (Event event : events) {
-            var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
+            var reqs = requestRepository.findAllByEventAndStatus(event.getId(),
+                    Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
         }
         List<Event> result;
@@ -311,7 +322,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Request cancelRequest(Long userId, Long requestId) {
-        var req = requestRepository.findById(requestId).orElseThrow(() -> new NotFoundException("Не найден запрос"));
+        var req = requestRepository.findById(requestId).orElseThrow(
+                () -> new NotFoundException("Не найден запрос"));
         if (!(req.getRequester().equals(userId))) {
             throw new BadRequestException("Пользователь не является автором запроса");
         }
@@ -321,7 +333,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event cancelEvent(Long userId, Long eventId) {
-        var event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Событие не найдено"));
+        var event = eventRepository.findById(eventId).orElseThrow(
+                () -> new NotFoundException("Событие не найдено"));
         if (!(event.getUserId().equals(userId))) {
             throw new BadRequestException("Пользователь не является автором события");
         }
@@ -357,7 +370,8 @@ public class EventServiceImpl implements EventService {
         Pageable pageable = PageRequest.of(fromPage, size.intValue());
         var events = eventRepository.findAllByUserId(userId, pageable);
         for (Event event : events) {
-            var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
+            var reqs = requestRepository
+                    .findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
         }
         return events;
@@ -371,14 +385,16 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event updateEvent(Long userId, UpdateEventRequest updateEventRequest) {
 
-        var event = eventRepository.findById(updateEventRequest.getEventId()).orElseThrow(() -> new NotFoundException("Не найдено событие"));
+        var event = eventRepository.findById(updateEventRequest.getEventId()).orElseThrow(
+                () -> new NotFoundException("Не найдено событие"));
 
         event.setAnnotation(updateEventRequest.getAnnotation());
         event.setDescription(updateEventRequest.getDescription());
         event.setEventDate(updateEventRequest.getEventDate());
 
         var categoryId = updateEventRequest.getCategory();
-        var category = categoryRepository.findById(categoryId).orElseThrow(() -> new NotFoundException("Не найдена категория"));
+        var category = categoryRepository.findById(categoryId).orElseThrow(
+                () -> new NotFoundException("Не найдена категория"));
 
         event.setCategory(category);
         event.setCategoryId(categoryId);
@@ -400,7 +416,6 @@ public class EventServiceImpl implements EventService {
         compilation.setTitle(newCompilationDto.getTitle());
         compilation.setPinned(newCompilationDto.getPinned());
         List<Event> events = new ArrayList<>();
-//        List<CompilationEvent> compilationEvents = new ArrayList<>();
         for (Long eventId : newCompilationDto.getEvents()) {
             events.add(
                     eventRepository.findById(eventId)
@@ -471,8 +486,10 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Подборка не найдена"));
         var event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие не найдено"));
-        List<CompilationEvent> compilationEventList = compilationEventRepository.findAllByCompilationIdAndEventId(compId, eventId);
-        compilationEventRepository.deleteAllById(compilationEventList.stream().map((e) -> e.getId()).collect(Collectors.toList()));
+        List<CompilationEvent> compilationEventList =
+                compilationEventRepository.findAllByCompilationIdAndEventId(compId, eventId);
+        compilationEventRepository.deleteAllById(compilationEventList.stream().map(
+                (e) -> e.getId()).collect(Collectors.toList()));
     }
 
     @Override
@@ -504,7 +521,8 @@ public class EventServiceImpl implements EventService {
 
 
     boolean manyRequests(Event event) {
-        var requests = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
+        var requests = requestRepository
+                .findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
         var numberOfRequests = Integer.valueOf(requests.size());
         var limit = event.getParticipantLimit();
         if ((limit > 0) && (numberOfRequests >= limit)) {

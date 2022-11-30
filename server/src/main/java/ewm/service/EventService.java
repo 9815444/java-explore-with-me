@@ -9,7 +9,7 @@ import java.util.List;
 public interface EventService {
     Event addEvent(Long userId, NewEventDto body);
 
-    Event getEventPublic(Long id);
+    Event getEventPublic(Long id, String requestURI, String remoteAddr);
 
     Event publishEvent(Long eventId);
 
@@ -17,9 +17,12 @@ public interface EventService {
 
     Event updateEventAdmin(Long eventId, AdminUpdateEventRequest body);
 
-    List<Event> getEvents(List<Long> users, List<String> states, List<Long> categories, LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size);
+    List<Event> getEvents(List<Long> users, List<String> states, List<Long> categories,
+                          LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size);
 
-    List<Event> getAllEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, Integer from, Integer size);
+    List<Event> getAllEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
+                             LocalDateTime rangeEnd, Boolean onlyAvailable, String sort,
+                             Integer from, Integer size, String requestURI, String remoteAddr);
 
     ResponseEntity<Request> addRequest(Long userId, Long eventId);
 

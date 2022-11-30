@@ -6,8 +6,7 @@ import ewm.model.Request;
 import ewm.model.UpdateEventRequest;
 import ewm.service.EventService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +18,8 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping
+@Slf4j
 public class UsersApiController {
-
-    private static final Logger log = LoggerFactory.getLogger(UsersApiController.class);
 
     private final EventService eventService;
 
@@ -78,7 +76,8 @@ public class UsersApiController {
     @RequestMapping(value = "/users/{userId}/requests/{requestId}/cancel",
             produces = {"application/json"},
             method = RequestMethod.PATCH)
-    public ResponseEntity<Request> cancelRequest(@PathVariable("userId") Long userId, @PathVariable("requestId") Long requestId) {
+    public ResponseEntity<Request> cancelRequest(@PathVariable("userId") Long userId,
+                                                 @PathVariable("requestId") Long requestId) {
         var req = eventService.cancelRequest(userId, requestId);
         return new ResponseEntity<Request>(req, HttpStatus.OK);
     }

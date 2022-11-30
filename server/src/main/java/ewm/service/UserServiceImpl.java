@@ -35,7 +35,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(Long userId) {
-        var user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Не найден пользователь"));
+        var user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Не найден пользователь"));
         userRepository.deleteById(userId);
     }
 
