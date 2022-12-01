@@ -541,7 +541,7 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    //Comment{
+    //Comments{
     @Override
     public Comment addComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
         checkEventAndUser(userId, eventId);
