@@ -27,6 +27,8 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
 
+    private final CommentRepository commentRepository;
+
     private final RequestRepository requestRepository;
 
     private final CompilationRepository compilationRepository;
@@ -82,6 +84,7 @@ public class EventServiceImpl implements EventService {
         var event = eventRepository.findByIdAndState(id, Event.StateEnum.PUBLISHED).orElseThrow();
         var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
         event.setConfirmedRequests(Long.valueOf(reqs.size()));
+        event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(id));
         statsClient.addStatEntry(new StatEntry("ewm", requestURI, remoteAddr, LocalDateTime.now()));
         return event;
     }
@@ -217,6 +220,7 @@ public class EventServiceImpl implements EventService {
             var reqs = requestRepository.findAllByEventAndStatus(event.getId(),
                     Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
+            event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(event.getId()));
         }
         List<Event> result;
         if (onlyAvailable) {
@@ -349,6 +353,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Событие не найдено"));
         var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
         event.setConfirmedRequests(Long.valueOf(reqs.size()));
+        event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(eventId));
         return event;
     }
 
@@ -450,8 +455,10 @@ public class EventServiceImpl implements EventService {
         var events = compilationEventRepository.findAllByCompilationId(compId);
         compilation.setEvents(
                 events.stream().map((e) -> {
-                    return eventRepository.findById(e.getEventId())
+                    var eventObject = eventRepository.findById(e.getEventId())
                             .orElseThrow(() -> new NotFoundException("Не найдено событие"));
+                    eventObject.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(e.getEventId()));
+                    return eventObject;
                 }).collect(Collectors.toList()));
         return compilation;
     }
@@ -503,7 +510,11 @@ public class EventServiceImpl implements EventService {
         for (Compilation comp : comps) {
             var eventsIdList = compilationEventRepository.findAllByCompilationId(comp.getId()).stream()
                     .map(compilationEvent -> compilationEvent.getEventId()).collect(Collectors.toList());
-            var events = eventRepository.findAllById(eventsIdList);
+            var events = eventRepository.findAllById(eventsIdList)
+                    .stream().map((event -> {
+                        event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(event.getId()));
+                        return event;
+                    })).collect(Collectors.toList());
             comp.setEvents(events);
 
         }
@@ -529,5 +540,91 @@ public class EventServiceImpl implements EventService {
             return false;
         }
     }
+
+    //Comment{
+    @Override
+    public Comment addComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
+        checkEventAndUser(userId, eventId);
+        Comment comment = new Comment();
+        comment.setUserId(userId);
+        comment.setEventId(eventId);
+        comment.setText(newCommentDto.getText());
+        comment.setPublished(false);
+        return commentRepository.save(comment);
+    }
+
+    @Override
+    public Comment updateComment(Long userId, Long eventId, Long commentId, NewCommentDto newCommentDto) {
+        checkEventAndUser(userId, eventId);
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        checkComment(userId, eventId, comment);
+        if (comment.getPublished()) {
+            throw new BadRequestException("Комментарий уже опубликован");
+        }
+        comment.setPublished(false);
+        comment.setText(newCommentDto.getText());
+        return commentRepository.save(comment);
+    }
+
+    @Override
+    public void deleteComment(Long userId, Long eventId, Long commentId) {
+        checkEventAndUser(userId, eventId);
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        checkComment(userId, eventId, comment);
+        commentRepository.deleteById(commentId);
+    }
+
+    @Override
+    public void postComment(Long commentId) {
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        if (comment.getPublished()) {
+            throw new BadRequestException("Комментарий был опубликован ранее");
+        }
+        comment.setPublished(true);
+        commentRepository.save(comment);
+    }
+
+    @Override
+    public void deleteCommentByAdmin(Long commentId) {
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        commentRepository.deleteById(commentId);
+    }
+
+    @Override
+    public List<Comment> findEventComments(Long userId, Long eventId) {
+        var event = eventRepository.findById(eventId).orElseThrow(
+                () -> new NotFoundException("Событие не найдено"));
+        var user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден"));
+        return commentRepository.findAllByUserIdAndEventId(userId, eventId);
+    }
+
+    @Override
+    public List<Comment> findAllComments(Long userId) {
+        var user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден"));
+        return commentRepository.findAllByUserId(userId);
+    }
+
+    private void checkEventAndUser(Long userId, Long eventId) {
+        var event = eventRepository.findByIdAndState(eventId, Event.StateEnum.PUBLISHED).orElseThrow(
+                () -> new NotFoundException("Событие не найдено"));
+        var user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден"));
+    }
+
+    private static void checkComment(Long userId, Long eventId, Comment comment) {
+        if (!(comment.getUserId().equals(userId))) {
+            throw new BadRequestException("Чужой комментарий");
+        }
+        if (!(comment.getEventId().equals(eventId))) {
+            throw new BadRequestException("Это комментарий к другому событию");
+        }
+    }
+    //}Comments
 
 }

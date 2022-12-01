@@ -10,6 +10,8 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Validated
@@ -70,6 +72,9 @@ public class Event {
     @ManyToOne(optional = false)
     @JoinColumn(name = "location_id", referencedColumnName = "id")
     private Location location = null;
+
+    @Transient
+    private List<Comment> comments = new ArrayList<>();
 
     @JsonProperty("paid")
     @Column(name = "paid")
