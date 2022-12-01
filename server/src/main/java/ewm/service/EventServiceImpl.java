@@ -77,7 +77,6 @@ public class EventServiceImpl implements EventService {
     }
 
 
-    //todo добавить количество просмотров и отразить в статистике
     @Override
     public Event getEventPublic(Long id, String requestURI, String remoteAddr) {
         var event = eventRepository.findByIdAndState(id, Event.StateEnum.PUBLISHED).orElseThrow();
@@ -185,7 +184,6 @@ public class EventServiceImpl implements EventService {
     }
 
 
-    //todo Добавить количество просмотров и отразить в статистике
     @Override
     public List<Event> getAllEvents(
             String text,

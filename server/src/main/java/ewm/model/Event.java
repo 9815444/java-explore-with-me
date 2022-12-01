@@ -1,9 +1,7 @@
 package ewm.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -104,33 +102,12 @@ public class Event {
     private Long views = Long.valueOf(0);
 
     public enum StateEnum {
-        PENDING("PENDING"),
+        PENDING,
 
-        PUBLISHED("PUBLISHED"),
+        PUBLISHED,
 
-        CANCELED("CANCELED");
+        CANCELED;
 
-        private String value;
-
-        StateEnum(String value) {
-            this.value = value;
-        }
-
-        @Override
-        @JsonValue
-        public String toString() {
-            return String.valueOf(value);
-        }
-
-        @JsonCreator
-        public static StateEnum fromValue(String text) {
-            for (StateEnum b : StateEnum.values()) {
-                if (String.valueOf(b.value).equals(text)) {
-                    return b;
-                }
-            }
-            return null;
-        }
     }
 
 }
