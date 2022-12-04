@@ -149,9 +149,11 @@ public class UsersApiController {
     @RequestMapping(value = "/users/{userId}/comments",
             produces = {"application/json"},
             method = RequestMethod.GET)
-    public ResponseEntity<List<Comment>> findAllComments(
-            @PathVariable("userId") Long userId) {
-        return new ResponseEntity<>(eventService.findAllComments(userId), HttpStatus.OK);
+    public ResponseEntity<List<Comment>> findAllUserComments(
+            @PathVariable("userId") Long userId,
+            @Valid @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
+            @Valid @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+        return new ResponseEntity<>(eventService.findAllUserComments(userId, from, size), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/users/{userId}/events/{eventId}/comments/{commentId}",

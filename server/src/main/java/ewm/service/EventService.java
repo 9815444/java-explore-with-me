@@ -72,5 +72,7 @@ public interface EventService {
 
     List<Comment> findEventComments(Long userId, Long eventId);
 
-    List<Comment> findAllComments(Long userId);
+    List<Comment> findAllUserComments(Long userId, Integer from, Integer size);
+
+    List<Comment> findAllComments(Integer from, Integer size);
 }

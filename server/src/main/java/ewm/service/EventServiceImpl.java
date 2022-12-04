@@ -604,10 +604,19 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public List<Comment> findAllComments(Long userId) {
+    public List<Comment> findAllUserComments(Long userId, Integer from, Integer size) {
+        int fromPage = from.intValue() / size.intValue();
+        Pageable pageable = PageRequest.of(fromPage, size.intValue());
         var user = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException("Пользователь не найден"));
-        return commentRepository.findAllByUserId(userId);
+        return commentRepository.findAllByUserId(userId, pageable);
+    }
+
+    @Override
+    public List<Comment> findAllComments(Integer from, Integer size) {
+        int fromPage = from.intValue() / size.intValue();
+        Pageable pageable = PageRequest.of(fromPage, size.intValue());
+        return commentRepository.findAll(pageable).getContent();
     }
 
     private void checkEventAndUser(Long userId, Long eventId) {
