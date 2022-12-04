@@ -25,4 +25,8 @@ public class StatsClient extends BaseClient {
         return post("/hit", statEntry);
     }
 
+    public ResponseEntity<Object> getEventHits(Long eventId) {
+        return get("/stats/" + eventId.toString());
+    }
+
 }

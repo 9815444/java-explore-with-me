@@ -3,6 +3,7 @@ package ewm.service;
 import ewm.client.StatsClient;
 import ewm.errors.BadRequestException;
 import ewm.errors.NotFoundException;
+import ewm.errors.StatsServerError;
 import ewm.mapper.EventMapper;
 import ewm.model.*;
 import ewm.repository.*;
@@ -86,6 +87,7 @@ public class EventServiceImpl implements EventService {
         event.setConfirmedRequests(Long.valueOf(reqs.size()));
         event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(id));
         statsClient.addStatEntry(new StatEntry("ewm", requestURI, remoteAddr, LocalDateTime.now()));
+        setHits(event);
         return event;
     }
 
@@ -174,7 +176,7 @@ public class EventServiceImpl implements EventService {
         } else {
             stateEnumList = states.stream().map(s -> Event.StateEnum.valueOf(s)).collect(Collectors.toList());
         }
-        return eventRepository.getEvents(
+        var events = eventRepository.getEvents(
                 users,
                 users.size() == 0,
                 stateEnumList,
@@ -184,6 +186,10 @@ public class EventServiceImpl implements EventService {
                 rangeEnd,
                 rangeEnd == null,
                 pageable);
+        for (Event event : events) {
+            setHits(event);
+        }
+        return events;
     }
 
 
@@ -221,6 +227,7 @@ public class EventServiceImpl implements EventService {
                     Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
             event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(event.getId()));
+            setHits(event);
         }
         List<Event> result;
         if (onlyAvailable) {
@@ -354,6 +361,7 @@ public class EventServiceImpl implements EventService {
         var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
         event.setConfirmedRequests(Long.valueOf(reqs.size()));
         event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(eventId));
+        setHits(event);
         return event;
     }
 
@@ -376,6 +384,7 @@ public class EventServiceImpl implements EventService {
             var reqs = requestRepository
                     .findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
+            setHits(event);
         }
         return events;
     }
@@ -539,6 +548,15 @@ public class EventServiceImpl implements EventService {
         } else {
             return false;
         }
+    }
+
+    private void setHits(Event event) {
+        var hitsResponse  = statsClient.getEventHits(event.getId());
+        if (hitsResponse.getStatusCode().isError()) {
+            throw new StatsServerError("Ошибка при получении просмотров из сервиса статистики.");
+        }
+        var hits = Long.valueOf(hitsResponse.getBody().toString());
+        event.setViews(hits);
     }
 
     //Comments{

@@ -44,5 +44,15 @@ public class StatsApi {
         return new ResponseEntity<>(stats, HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/stats/{eventId}",
+            method = RequestMethod.GET)
+    public ResponseEntity<Long> eventsHits(
+            @Valid @PathVariable Long eventId) {
+        List<String> uris = List.of("/events/" + eventId.toString());
+        var stats =
+                statsService.getStats(null, null, uris, false);
+        return new ResponseEntity<>(Long.valueOf(stats.size()), HttpStatus.OK);
+    }
+
 }
 
