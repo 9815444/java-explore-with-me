@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -186,9 +185,7 @@ public class EventServiceImpl implements EventService {
                 rangeEnd,
                 rangeEnd == null,
                 pageable);
-        for (Event event : events) {
-            setHits(event);
-        }
+        setHitsForEvents(events);
         return events;
     }
 
@@ -227,8 +224,8 @@ public class EventServiceImpl implements EventService {
                     Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
             event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(event.getId()));
-            setHits(event);
         }
+        setHitsForEvents(events);
         List<Event> result;
         if (onlyAvailable) {
             result = events
@@ -384,8 +381,8 @@ public class EventServiceImpl implements EventService {
             var reqs = requestRepository
                     .findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
-            setHits(event);
         }
+        setHitsForEvents(events);
         return events;
     }
 
@@ -550,13 +547,37 @@ public class EventServiceImpl implements EventService {
         }
     }
 
-    private void setHits(Event event) {
-        var hitsResponse  = statsClient.getEventHits(event.getId());
+    private void setHitsForEvents(List<Event> events) {
+        var hitsResponse = statsClient.getEventHits(events);
         if (hitsResponse.getStatusCode().isError()) {
             throw new StatsServerError("Ошибка при получении просмотров из сервиса статистики.");
         }
-        var hits = Long.valueOf(hitsResponse.getBody().toString());
-        event.setViews(hits);
+        var statsData = ((ArrayList<Object>) hitsResponse.getBody());
+        Map<Long, Long> hitsMap = new HashMap<>();
+        for (Object object : statsData) {
+            var f = 1;
+            var uri = (String) ((LinkedHashMap) object).get("uri");
+            var eventId = Long.valueOf(uri.replace("/events/", ""));
+            var hits = Long.valueOf(((LinkedHashMap) object).get("hits").toString());
+
+            var data = hitsMap.get(eventId);
+            if (data == null) {
+                hitsMap.put(eventId, hits);
+            } else {
+                hitsMap.put(eventId, data + hits);
+            }
+        }
+        for (Event event : events) {
+            var hitsData = hitsMap.get(event.getId());
+            if (hitsData != null) {
+                event.setViews(hitsData);
+            }
+        }
+    }
+
+    private void setHits(Event event) {
+        setHitsForEvents(List.of(event, event));
+
     }
 
     //Comments{
