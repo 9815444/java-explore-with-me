@@ -59,4 +59,20 @@ public interface EventService {
     void removeEventFromCompilation(Long compId, Long eventId);
 
     List<Compilation> getCompilations(Boolean pinned, Integer from, Integer size);
+
+    Comment addComment(Long userId, Long eventId, NewCommentDto newCommentDto);
+
+    Comment updateComment(Long userId, Long eventId, Long commentId, NewCommentDto newCommentDto);
+
+    void deleteComment(Long userId, Long eventId, Long commentId);
+
+    void postComment(Long commentId);
+
+    void deleteCommentByAdmin(Long commentId);
+
+    List<Comment> findEventComments(Long userId, Long eventId);
+
+    List<Comment> findAllUserComments(Long userId, Integer from, Integer size);
+
+    List<Comment> findAllComments(Integer from, Integer size);
 }

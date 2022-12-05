@@ -3,6 +3,7 @@ package ewm.service;
 import ewm.client.StatsClient;
 import ewm.errors.BadRequestException;
 import ewm.errors.NotFoundException;
+import ewm.errors.StatsServerError;
 import ewm.mapper.EventMapper;
 import ewm.model.*;
 import ewm.repository.*;
@@ -15,8 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +26,8 @@ public class EventServiceImpl implements EventService {
     private final StatsClient statsClient;
 
     private final EventRepository eventRepository;
+
+    private final CommentRepository commentRepository;
 
     private final RequestRepository requestRepository;
 
@@ -82,7 +84,9 @@ public class EventServiceImpl implements EventService {
         var event = eventRepository.findByIdAndState(id, Event.StateEnum.PUBLISHED).orElseThrow();
         var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
         event.setConfirmedRequests(Long.valueOf(reqs.size()));
+        event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(id));
         statsClient.addStatEntry(new StatEntry("ewm", requestURI, remoteAddr, LocalDateTime.now()));
+        setHits(event);
         return event;
     }
 
@@ -171,7 +175,7 @@ public class EventServiceImpl implements EventService {
         } else {
             stateEnumList = states.stream().map(s -> Event.StateEnum.valueOf(s)).collect(Collectors.toList());
         }
-        return eventRepository.getEvents(
+        var events = eventRepository.getEvents(
                 users,
                 users.size() == 0,
                 stateEnumList,
@@ -181,6 +185,8 @@ public class EventServiceImpl implements EventService {
                 rangeEnd,
                 rangeEnd == null,
                 pageable);
+        setHitsForEvents(events);
+        return events;
     }
 
 
@@ -217,7 +223,9 @@ public class EventServiceImpl implements EventService {
             var reqs = requestRepository.findAllByEventAndStatus(event.getId(),
                     Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
+            event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(event.getId()));
         }
+        setHitsForEvents(events);
         List<Event> result;
         if (onlyAvailable) {
             result = events
@@ -349,6 +357,8 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new NotFoundException("Событие не найдено"));
         var reqs = requestRepository.findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
         event.setConfirmedRequests(Long.valueOf(reqs.size()));
+        event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(eventId));
+        setHits(event);
         return event;
     }
 
@@ -372,6 +382,7 @@ public class EventServiceImpl implements EventService {
                     .findAllByEventAndStatus(event.getId(), Request.StateEnum.CONFIRMED);
             event.setConfirmedRequests(Long.valueOf(reqs.size()));
         }
+        setHitsForEvents(events);
         return events;
     }
 
@@ -450,8 +461,10 @@ public class EventServiceImpl implements EventService {
         var events = compilationEventRepository.findAllByCompilationId(compId);
         compilation.setEvents(
                 events.stream().map((e) -> {
-                    return eventRepository.findById(e.getEventId())
+                    var eventObject = eventRepository.findById(e.getEventId())
                             .orElseThrow(() -> new NotFoundException("Не найдено событие"));
+                    eventObject.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(e.getEventId()));
+                    return eventObject;
                 }).collect(Collectors.toList()));
         return compilation;
     }
@@ -503,7 +516,11 @@ public class EventServiceImpl implements EventService {
         for (Compilation comp : comps) {
             var eventsIdList = compilationEventRepository.findAllByCompilationId(comp.getId()).stream()
                     .map(compilationEvent -> compilationEvent.getEventId()).collect(Collectors.toList());
-            var events = eventRepository.findAllById(eventsIdList);
+            var events = eventRepository.findAllById(eventsIdList)
+                    .stream().map((event -> {
+                        event.setComments(commentRepository.findAllByEventIdAndPublishedIsTrue(event.getId()));
+                        return event;
+                    })).collect(Collectors.toList());
             comp.setEvents(events);
 
         }
@@ -529,5 +546,133 @@ public class EventServiceImpl implements EventService {
             return false;
         }
     }
+
+    private void setHitsForEvents(List<Event> events) {
+        var hitsResponse = statsClient.getEventHits(events);
+        if (hitsResponse.getStatusCode().isError()) {
+            throw new StatsServerError("Ошибка при получении просмотров из сервиса статистики.");
+        }
+        var statsData = ((ArrayList<Object>) hitsResponse.getBody());
+        Map<Long, Long> hitsMap = new HashMap<>();
+        for (Object object : statsData) {
+            var f = 1;
+            var uri = (String) ((LinkedHashMap) object).get("uri");
+            var eventId = Long.valueOf(uri.replace("/events/", ""));
+            var hits = Long.valueOf(((LinkedHashMap) object).get("hits").toString());
+
+            var data = hitsMap.get(eventId);
+            if (data == null) {
+                hitsMap.put(eventId, hits);
+            } else {
+                hitsMap.put(eventId, data + hits);
+            }
+        }
+        for (Event event : events) {
+            var hitsData = hitsMap.get(event.getId());
+            if (hitsData != null) {
+                event.setViews(hitsData);
+            }
+        }
+    }
+
+    private void setHits(Event event) {
+        setHitsForEvents(List.of(event, event));
+
+    }
+
+    //Comments{
+    @Override
+    public Comment addComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
+        checkEventAndUser(userId, eventId);
+        Comment comment = new Comment();
+        comment.setUserId(userId);
+        comment.setEventId(eventId);
+        comment.setText(newCommentDto.getText());
+        comment.setPublished(false);
+        return commentRepository.save(comment);
+    }
+
+    @Override
+    public Comment updateComment(Long userId, Long eventId, Long commentId, NewCommentDto newCommentDto) {
+        checkEventAndUser(userId, eventId);
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        checkComment(userId, eventId, comment);
+        if (comment.getPublished()) {
+            throw new BadRequestException("Комментарий уже опубликован");
+        }
+        comment.setPublished(false);
+        comment.setText(newCommentDto.getText());
+        return commentRepository.save(comment);
+    }
+
+    @Override
+    public void deleteComment(Long userId, Long eventId, Long commentId) {
+        checkEventAndUser(userId, eventId);
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        checkComment(userId, eventId, comment);
+        commentRepository.deleteById(commentId);
+    }
+
+    @Override
+    public void postComment(Long commentId) {
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        if (comment.getPublished()) {
+            throw new BadRequestException("Комментарий был опубликован ранее");
+        }
+        comment.setPublished(true);
+        commentRepository.save(comment);
+    }
+
+    @Override
+    public void deleteCommentByAdmin(Long commentId) {
+        var comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
+        commentRepository.deleteById(commentId);
+    }
+
+    @Override
+    public List<Comment> findEventComments(Long userId, Long eventId) {
+        var event = eventRepository.findById(eventId).orElseThrow(
+                () -> new NotFoundException("Событие не найдено"));
+        var user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден"));
+        return commentRepository.findAllByUserIdAndEventId(userId, eventId);
+    }
+
+    @Override
+    public List<Comment> findAllUserComments(Long userId, Integer from, Integer size) {
+        int fromPage = from.intValue() / size.intValue();
+        Pageable pageable = PageRequest.of(fromPage, size.intValue());
+        var user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден"));
+        return commentRepository.findAllByUserId(userId, pageable);
+    }
+
+    @Override
+    public List<Comment> findAllComments(Integer from, Integer size) {
+        int fromPage = from.intValue() / size.intValue();
+        Pageable pageable = PageRequest.of(fromPage, size.intValue());
+        return commentRepository.findAll(pageable).getContent();
+    }
+
+    private void checkEventAndUser(Long userId, Long eventId) {
+        var event = eventRepository.findByIdAndState(eventId, Event.StateEnum.PUBLISHED).orElseThrow(
+                () -> new NotFoundException("Событие не найдено"));
+        var user = userRepository.findById(userId).orElseThrow(
+                () -> new NotFoundException("Пользователь не найден"));
+    }
+
+    private static void checkComment(Long userId, Long eventId, Comment comment) {
+        if (!(comment.getUserId().equals(userId))) {
+            throw new BadRequestException("Чужой комментарий");
+        }
+        if (!(comment.getEventId().equals(eventId))) {
+            throw new BadRequestException("Это комментарий к другому событию");
+        }
+    }
+    //}Comments
 
 }

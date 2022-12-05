@@ -198,5 +198,35 @@ public class AdminApiController {
         return new ResponseEntity<>(eventFullDtoOptional, HttpStatus.OK);
     }
 
+    //Comments{
+    @RequestMapping(value = "/admin/comments/{commentId}/publish",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity<Void> postComment(
+            @PathVariable("commentId") Long commentId) {
+        eventService.postComment(commentId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/admin/comments/",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<List<Comment>> postComment(
+            @Valid @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
+            @Valid @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+        return new ResponseEntity<>(eventService.findAllComments(from, size), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/admin/comments/{commentId}",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteComment(
+            @PathVariable("commentId") Long commentId) {
+        eventService.deleteCommentByAdmin(commentId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //}Comments
+
 
 }

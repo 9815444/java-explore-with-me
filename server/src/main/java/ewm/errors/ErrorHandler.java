@@ -66,6 +66,16 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiError handleNotFound(final StatsServerError e) {
+        var apiError = new ApiError();
+        apiError.setMessage(e.getMessage());
+        apiError.setStatus(ApiError.Status.INTERNAL_SERVER_ERROR);
+        apiError.setTimestamp(LocalDateTime.now());
+        return apiError;
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleNotFound(final Exception e) {
         var apiError = new ApiError();
         apiError.setMessage(e.getMessage());

@@ -1,9 +1,6 @@
 package ewm.api;
 
-import ewm.model.Event;
-import ewm.model.NewEventDto;
-import ewm.model.Request;
-import ewm.model.UpdateEventRequest;
+import ewm.model.*;
 import ewm.service.EventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -128,5 +125,59 @@ public class UsersApiController {
             @Valid @RequestBody UpdateEventRequest updateEventRequest) {
         return new ResponseEntity<Event>(eventService.updateEvent(userId, updateEventRequest), HttpStatus.OK);
     }
+
+    //Comments { //todo comments private
+    @RequestMapping(value = "/users/{userId}/events/{eventId}/comments",
+            produces = {"application/json"},
+            method = RequestMethod.POST)
+    public ResponseEntity<Comment> addComment(
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId,
+            @Valid @RequestBody NewCommentDto newCommentDto) {
+        return new ResponseEntity<>(eventService.addComment(userId, eventId, newCommentDto), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/users/{userId}/events/{eventId}/comments",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<List<Comment>> findEventComments(
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId) {
+        return new ResponseEntity<>(eventService.findEventComments(userId, eventId), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/users/{userId}/comments",
+            produces = {"application/json"},
+            method = RequestMethod.GET)
+    public ResponseEntity<List<Comment>> findAllUserComments(
+            @PathVariable("userId") Long userId,
+            @Valid @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
+            @Valid @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+        return new ResponseEntity<>(eventService.findAllUserComments(userId, from, size), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/users/{userId}/events/{eventId}/comments/{commentId}",
+            produces = {"application/json"},
+            method = RequestMethod.PATCH)
+    public ResponseEntity<Comment> updateComment(
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId,
+            @PathVariable("commentId") Long commentId,
+            @Valid @RequestBody NewCommentDto newCommentDto) {
+        return new ResponseEntity<>(eventService.updateComment(userId, eventId, commentId, newCommentDto), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/users/{userId}/events/{eventId}/comments/{commentId}",
+            produces = {"application/json"},
+            method = RequestMethod.DELETE)
+    public ResponseEntity<List<Request>> deleteComment(
+            @PathVariable("userId") Long userId,
+            @PathVariable("eventId") Long eventId,
+            @PathVariable("commentId") Long commentId) {
+        eventService.deleteComment(userId, eventId, commentId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //} Comments
 
 }
